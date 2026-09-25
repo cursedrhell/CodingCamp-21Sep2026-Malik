@@ -1,145 +1,226 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Expense & Budget Visualizer</title>
+    <title>Expense &amp; Budget Visualizer</title>
     <link rel="stylesheet" href="css/style.css" />
-    <!-- Chart.js CDN -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
   </head>
   <body>
     <div class="app-wrapper">
 
-      <!-- ── Header ── -->
+      <!-- ══════════════ HEADER ══════════════ -->
       <header class="app-header">
         <div class="header-inner">
-          <div class="header-title">
+          <div class="header-left">
             <span class="header-icon">💰</span>
-            <h1>Expense &amp; Budget Visualizer</h1>
+            <div>
+              <h1>Expense &amp; Budget Visualizer</h1>
+              <p class="header-sub">Track your spending, visualize your habits</p>
+            </div>
           </div>
-          <p class="header-sub">Track your spending, visualize your habits</p>
+          <!-- Dark / Light toggle -->
+          <button class="theme-toggle" id="themeToggle" aria-label="Toggle dark mode" title="Toggle dark/light mode">
+            <span class="theme-icon" id="themeIcon">🌙</span>
+            <span class="theme-label" id="themeLabel">Dark</span>
+          </button>
         </div>
       </header>
 
-      <!-- ── Main content ── -->
+      <!-- ══════════════ MAIN ══════════════ -->
       <main class="app-main">
 
-        <!-- Balance card -->
+        <!-- ── Balance card ── -->
         <section class="balance-card" aria-label="Total Balance">
           <p class="balance-label">Total Spent</p>
           <p class="balance-amount" id="totalBalance">$0.00</p>
-          <div class="category-pills" id="categoryPills">
-            <!-- Populated by JS -->
-          </div>
+          <div class="category-pills" id="categoryPills"></div>
         </section>
 
-        <!-- Two-column layout -->
-        <div class="content-grid">
+        <!-- ── Tab bar ── -->
+        <div class="tab-bar" role="tablist" aria-label="View">
+          <button class="tab-btn active" role="tab" aria-selected="true"  data-tab="transactions">📋 Transactions</button>
+          <button class="tab-btn"        role="tab" aria-selected="false" data-tab="monthly">📅 Monthly Summary</button>
+          <button class="tab-btn"        role="tab" aria-selected="false" data-tab="budgets">🎯 Budget Limits</button>
+        </div>
 
-          <!-- Left column: form + transaction list -->
-          <div class="left-col">
+        <!-- ══ TAB: TRANSACTIONS ══ -->
+        <div class="tab-panel" id="tab-transactions">
+          <div class="content-grid">
 
-            <!-- Add transaction form -->
-            <section class="card" aria-label="Add Transaction">
-              <h2 class="card-title">
-                <span class="card-icon">➕</span> Add Transaction
-              </h2>
-              <form id="transactionForm" novalidate>
-                <div class="form-group">
-                  <label for="itemName">Item Name</label>
-                  <input
-                    type="text"
-                    id="itemName"
-                    placeholder="e.g. Coffee, Bus ticket…"
-                    maxlength="60"
-                    autocomplete="off"
-                  />
-                  <span class="field-error" id="nameError"></span>
+            <!-- Left: form + list -->
+            <div class="left-col">
+
+              <!-- Add transaction -->
+              <section class="card" aria-label="Add Transaction">
+                <h2 class="card-title"><span class="card-icon">➕</span> Add Transaction</h2>
+                <form id="transactionForm" novalidate>
+
+                  <div class="form-group">
+                    <label for="itemName">Item Name</label>
+                    <input type="text" id="itemName" placeholder="e.g. Coffee, Bus ticket…" maxlength="60" autocomplete="off" />
+                    <span class="field-error" id="nameError"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="amount">Amount ($)</label>
+                    <input type="number" id="amount" placeholder="0.00" min="0.01" step="0.01" />
+                    <span class="field-error" id="amountError"></span>
+                  </div>
+
+                  <div class="form-group">
+                    <label for="category">Category</label>
+                    <div class="category-select-row">
+                      <select id="category">
+                        <option value="" disabled selected>Select a category</option>
+                        <!-- Built-in options -->
+                        <option value="Food">🍔 Food</option>
+                        <option value="Transport">🚌 Transport</option>
+                        <option value="Fun">🎉 Fun</option>
+                        <!-- Custom options injected by JS -->
+                      </select>
+                      <button type="button" class="btn-icon" id="addCategoryBtn" title="Add custom category" aria-label="Add custom category">＋</button>
+                    </div>
+                    <span class="field-error" id="categoryError"></span>
+                  </div>
+
+                  <button type="submit" class="btn-primary">Add Transaction</button>
+                </form>
+              </section>
+
+              <!-- Transaction list -->
+              <section class="card" aria-label="Transaction List">
+                <div class="list-header">
+                  <h2 class="card-title"><span class="card-icon">📋</span> Transactions</h2>
+                  <button class="btn-clear" id="clearAllBtn" aria-label="Clear all transactions">Clear All</button>
                 </div>
 
-                <div class="form-group">
-                  <label for="amount">Amount ($)</label>
-                  <input
-                    type="number"
-                    id="amount"
-                    placeholder="0.00"
-                    min="0.01"
-                    step="0.01"
-                  />
-                  <span class="field-error" id="amountError"></span>
+                <!-- Sort + Filter bar -->
+                <div class="sort-filter-bar">
+                  <div class="sort-group">
+                    <label for="sortSelect">Sort</label>
+                    <select id="sortSelect" aria-label="Sort transactions">
+                      <option value="date-desc">Newest first</option>
+                      <option value="date-asc">Oldest first</option>
+                      <option value="amount-desc">Amount ↓</option>
+                      <option value="amount-asc">Amount ↑</option>
+                      <option value="category-az">Category A–Z</option>
+                    </select>
+                  </div>
+                  <div class="filter-group">
+                    <label for="filterSelect">Filter</label>
+                    <select id="filterSelect" aria-label="Filter by category">
+                      <option value="all">All categories</option>
+                      <!-- Populated by JS -->
+                    </select>
+                  </div>
                 </div>
 
-                <div class="form-group">
-                  <label for="category">Category</label>
-                  <select id="category">
-                    <option value="" disabled selected>Select a category</option>
-                    <option value="Food">🍔 Food</option>
-                    <option value="Transport">🚌 Transport</option>
-                    <option value="Fun">🎉 Fun</option>
-                  </select>
-                  <span class="field-error" id="categoryError"></span>
+                <div class="transaction-list-wrapper">
+                  <ul class="transaction-list" id="transactionList"></ul>
+                  <div class="empty-state" id="emptyState">
+                    <span class="empty-icon">🧾</span>
+                    <p>No transactions yet.</p>
+                    <p>Add one above to get started!</p>
+                  </div>
                 </div>
+              </section>
 
-                <button type="submit" class="btn-primary">
-                  Add Transaction
-                </button>
-              </form>
-            </section>
+            </div><!-- /left-col -->
 
-            <!-- Transaction list -->
-            <section class="card" aria-label="Transaction List">
-              <div class="list-header">
-                <h2 class="card-title">
-                  <span class="card-icon">📋</span> Transactions
-                </h2>
-                <button
-                  class="btn-clear"
-                  id="clearAllBtn"
-                  aria-label="Clear all transactions"
-                >
-                  Clear All
-                </button>
-              </div>
-
-              <div class="transaction-list-wrapper">
-                <ul class="transaction-list" id="transactionList">
-                  <!-- Populated by JS -->
-                </ul>
-                <div class="empty-state" id="emptyState">
-                  <span class="empty-icon">🧾</span>
-                  <p>No transactions yet.</p>
-                  <p>Add one above to get started!</p>
+            <!-- Right: chart -->
+            <div class="right-col">
+              <section class="card chart-card" aria-label="Spending Chart">
+                <h2 class="card-title"><span class="card-icon">📊</span> Spending by Category</h2>
+                <div class="chart-wrapper" id="chartWrapper">
+                  <canvas id="spendingChart" aria-label="Spending pie chart" role="img"></canvas>
                 </div>
-              </div>
-            </section>
+                <div class="chart-empty" id="chartEmpty">
+                  <span class="empty-icon">📈</span>
+                  <p>Add transactions to see your chart</p>
+                </div>
+              </section>
+            </div>
 
-          </div><!-- /left-col -->
+          </div>
+        </div><!-- /tab-transactions -->
 
-          <!-- Right column: pie chart -->
-          <div class="right-col">
-            <section class="card chart-card" aria-label="Spending Chart">
-              <h2 class="card-title">
-                <span class="card-icon">📊</span> Spending by Category
-              </h2>
-              <div class="chart-wrapper" id="chartWrapper">
-                <canvas id="spendingChart" aria-label="Spending pie chart" role="img"></canvas>
+        <!-- ══ TAB: MONTHLY SUMMARY ══ -->
+        <div class="tab-panel hidden" id="tab-monthly">
+          <section class="card">
+            <div class="monthly-header">
+              <h2 class="card-title"><span class="card-icon">📅</span> Monthly Summary</h2>
+              <div class="month-nav">
+                <button class="btn-nav" id="prevMonth" aria-label="Previous month">‹</button>
+                <span class="month-label" id="monthLabel">—</span>
+                <button class="btn-nav" id="nextMonth" aria-label="Next month">›</button>
               </div>
-              <div class="chart-empty" id="chartEmpty">
-                <span class="empty-icon">📈</span>
-                <p>Add transactions to see your chart</p>
-              </div>
-            </section>
-          </div><!-- /right-col -->
+            </div>
 
-        </div><!-- /content-grid -->
-      </main>
+            <!-- Stats row -->
+            <div class="monthly-stats" id="monthlyStats">
+              <!-- Injected by JS -->
+            </div>
+
+            <!-- Bar chart -->
+            <div class="monthly-chart-wrapper">
+              <canvas id="monthlyChart" aria-label="Monthly bar chart" role="img"></canvas>
+            </div>
+
+            <!-- Monthly transaction list -->
+            <div class="monthly-list-wrapper">
+              <ul class="transaction-list" id="monthlyList"></ul>
+              <div class="empty-state" id="monthlyEmpty">
+                <span class="empty-icon">📭</span>
+                <p>No transactions this month.</p>
+              </div>
+            </div>
+          </section>
+        </div><!-- /tab-monthly -->
+
+        <!-- ══ TAB: BUDGET LIMITS ══ -->
+        <div class="tab-panel hidden" id="tab-budgets">
+          <section class="card">
+            <h2 class="card-title"><span class="card-icon">🎯</span> Spending Limits by Category</h2>
+            <p class="section-desc">Set a monthly budget limit per category. You'll see a warning when spending gets close (80%) or exceeds the limit.</p>
+            <div class="budget-list" id="budgetList">
+              <!-- Injected by JS -->
+            </div>
+          </section>
+        </div><!-- /tab-budgets -->
+
+      </main><!-- /app-main -->
 
       <footer class="app-footer">
-        <p>Data stored locally in your browser &mdash; never sent anywhere.</p>
+        <p>Data stored locally in your browser — never sent anywhere.</p>
       </footer>
 
     </div><!-- /app-wrapper -->
+
+    <!-- ══ CUSTOM CATEGORY MODAL ══ -->
+    <div class="modal-overlay hidden" id="categoryModal" role="dialog" aria-modal="true" aria-labelledby="modalTitle">
+      <div class="modal">
+        <h3 class="modal-title" id="modalTitle">➕ Add Custom Category</h3>
+        <div class="form-group">
+          <label for="customCatEmoji">Emoji</label>
+          <input type="text" id="customCatEmoji" placeholder="e.g. 🏠" maxlength="4" />
+        </div>
+        <div class="form-group">
+          <label for="customCatName">Category Name</label>
+          <input type="text" id="customCatName" placeholder="e.g. Housing" maxlength="30" autocomplete="off" />
+          <span class="field-error" id="customCatError"></span>
+        </div>
+        <div class="form-group">
+          <label for="customCatColor">Color</label>
+          <input type="color" id="customCatColor" value="#10b981" />
+        </div>
+        <div class="modal-actions">
+          <button class="btn-secondary" id="cancelCategoryBtn">Cancel</button>
+          <button class="btn-primary modal-save" id="saveCategoryBtn">Save Category</button>
+        </div>
+      </div>
+    </div>
 
     <script src="js/app.js"></script>
   </body>
