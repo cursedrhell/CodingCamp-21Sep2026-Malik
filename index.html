@@ -1,0 +1,146 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Expense & Budget Visualizer</title>
+    <link rel="stylesheet" href="css/style.css" />
+    <!-- Chart.js CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+  </head>
+  <body>
+    <div class="app-wrapper">
+
+      <!-- ── Header ── -->
+      <header class="app-header">
+        <div class="header-inner">
+          <div class="header-title">
+            <span class="header-icon">💰</span>
+            <h1>Expense &amp; Budget Visualizer</h1>
+          </div>
+          <p class="header-sub">Track your spending, visualize your habits</p>
+        </div>
+      </header>
+
+      <!-- ── Main content ── -->
+      <main class="app-main">
+
+        <!-- Balance card -->
+        <section class="balance-card" aria-label="Total Balance">
+          <p class="balance-label">Total Spent</p>
+          <p class="balance-amount" id="totalBalance">$0.00</p>
+          <div class="category-pills" id="categoryPills">
+            <!-- Populated by JS -->
+          </div>
+        </section>
+
+        <!-- Two-column layout -->
+        <div class="content-grid">
+
+          <!-- Left column: form + transaction list -->
+          <div class="left-col">
+
+            <!-- Add transaction form -->
+            <section class="card" aria-label="Add Transaction">
+              <h2 class="card-title">
+                <span class="card-icon">➕</span> Add Transaction
+              </h2>
+              <form id="transactionForm" novalidate>
+                <div class="form-group">
+                  <label for="itemName">Item Name</label>
+                  <input
+                    type="text"
+                    id="itemName"
+                    placeholder="e.g. Coffee, Bus ticket…"
+                    maxlength="60"
+                    autocomplete="off"
+                  />
+                  <span class="field-error" id="nameError"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="amount">Amount ($)</label>
+                  <input
+                    type="number"
+                    id="amount"
+                    placeholder="0.00"
+                    min="0.01"
+                    step="0.01"
+                  />
+                  <span class="field-error" id="amountError"></span>
+                </div>
+
+                <div class="form-group">
+                  <label for="category">Category</label>
+                  <select id="category">
+                    <option value="" disabled selected>Select a category</option>
+                    <option value="Food">🍔 Food</option>
+                    <option value="Transport">🚌 Transport</option>
+                    <option value="Fun">🎉 Fun</option>
+                  </select>
+                  <span class="field-error" id="categoryError"></span>
+                </div>
+
+                <button type="submit" class="btn-primary">
+                  Add Transaction
+                </button>
+              </form>
+            </section>
+
+            <!-- Transaction list -->
+            <section class="card" aria-label="Transaction List">
+              <div class="list-header">
+                <h2 class="card-title">
+                  <span class="card-icon">📋</span> Transactions
+                </h2>
+                <button
+                  class="btn-clear"
+                  id="clearAllBtn"
+                  aria-label="Clear all transactions"
+                >
+                  Clear All
+                </button>
+              </div>
+
+              <div class="transaction-list-wrapper">
+                <ul class="transaction-list" id="transactionList">
+                  <!-- Populated by JS -->
+                </ul>
+                <div class="empty-state" id="emptyState">
+                  <span class="empty-icon">🧾</span>
+                  <p>No transactions yet.</p>
+                  <p>Add one above to get started!</p>
+                </div>
+              </div>
+            </section>
+
+          </div><!-- /left-col -->
+
+          <!-- Right column: pie chart -->
+          <div class="right-col">
+            <section class="card chart-card" aria-label="Spending Chart">
+              <h2 class="card-title">
+                <span class="card-icon">📊</span> Spending by Category
+              </h2>
+              <div class="chart-wrapper" id="chartWrapper">
+                <canvas id="spendingChart" aria-label="Spending pie chart" role="img"></canvas>
+              </div>
+              <div class="chart-empty" id="chartEmpty">
+                <span class="empty-icon">📈</span>
+                <p>Add transactions to see your chart</p>
+              </div>
+            </section>
+          </div><!-- /right-col -->
+
+        </div><!-- /content-grid -->
+      </main>
+
+      <footer class="app-footer">
+        <p>Data stored locally in your browser &mdash; never sent anywhere.</p>
+      </footer>
+
+    </div><!-- /app-wrapper -->
+
+    <script src="js/app.js"></script>
+  </body>
+</html>
